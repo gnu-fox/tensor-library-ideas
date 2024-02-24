@@ -1,32 +1,41 @@
-# Prerequisites
-*.d
-
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
+# Compiled output
+build/
+bin/
 *.out
-*.app
+
+# CMake artifacts
+CMakeFiles/
+CMakeCache.txt
+CMakeScripts/
+cmake_install.cmake
+CMakeOutput.log
+CMakeTmp/
+CMakeDirectoryInformation.cmake
+
+# Compiled libraries
+lib/
+
+# IDE-specific files
+.vscode/
+.vscode/!extensions.json # Allow to provide recommended extensions
+.idea/
+
+# Ignore any personal or system-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore user-specific CMake files
+CMakeUserPresets.json
+CMakeUserPresets.json.old
+
+# Ignore compilation scripts (if not needed in the repo)
+compilation.sh
+
+# Ignore generated documentation or other generated files
+/doc/
+/docs/
+/coverage/
+/xml/
+
+# Ignore any log files
+*.log
