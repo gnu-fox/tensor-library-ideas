@@ -10,6 +10,7 @@ enum class dtype {
     float32
 };
 
+
 class Tensor {
     public:
     using size_type = std::size_t;
@@ -22,6 +23,7 @@ class Tensor {
 
     private:
     void* offset_;
+    Tensor* gradient_;
     size_type size_;
     shape_type shape_;
     shape_type strides_;
