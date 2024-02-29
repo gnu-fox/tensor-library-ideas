@@ -127,10 +127,6 @@ class Array {
         return size_;
     }
 
-    Array& operator[](size_type index) {
-        
-    }
-
     private:
     void* offset_;
     type dtype_;

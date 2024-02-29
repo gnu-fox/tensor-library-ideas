@@ -51,5 +51,13 @@ int main() {
     Array a({3, 4, 3}, offset);
     a.print();
 
+    std::cout << "----------------" << std::endl;
+
+    a[1].print();
+
+    std::cout << "----------------" << std::endl;
+
+    a[1][3].print();
+
     delete [] offset;
 }
