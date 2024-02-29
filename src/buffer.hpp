@@ -7,17 +7,23 @@
 
 namespace internal {
     
-    class MemoryBlock {
+    class Block {
         public:
         using size_type = std::size_t;
 
-        MemoryBlock(size_type memory_size) {
+        Block(size_type memory_size) {
             memory_size_ = memory_size;
             data_ = operator new(memory_size_);
         }
 
-        ~MemoryBlock() {
+        ~Block() {
             operator delete(data_);
+        }
+        
+        void* allocate(std::size_t chunk_size) {
+            void* offset = offset_;
+            offset_ = static_cast<char*>(offset_) + chunk_size;
+            return offset;
         }
 
         private:
@@ -25,15 +31,18 @@ namespace internal {
         void* offset_;
         size_type memory_size_;
     };
-
 }
 
 struct Memory {
     using size_type = std::size_t;
-    static std::unordered_map<std::string, internal::MemoryBlock> buffer;
+    static std::unordered_map<std::string, internal::Block> pool;
 
-    static void reserve(size_type memory_size, std::string location ) {
-        buffer[location] = internal::MemoryBlock(memory_size);
+    void static reserve(size_type memory_size, const std::string& location = "default") {
+        pool[location] = internal::Block(memory_size);
+    }
+
+    static void* allocate(size_type chunk_size, const std::string& location = "default") {
+        return pool[location].allocate(chunk_size);
     }
 };
 

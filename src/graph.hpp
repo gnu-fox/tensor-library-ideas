@@ -2,12 +2,27 @@
 #define GRAPH_HPP_
 
 #include <unordered_map>
+#include <variant>
 
-class Graph {
+template <typename Derived>
+struct Operation {
 
-    /*
-    Computational graph should be stored in a map of nodes
-    */
+};
+
+struct Addition : public Operation<Addition> {
+
+};
+
+struct Multiplication : public Operation<Multiplication> {
+
+};
+
+struct Graph {
+    using Node = std::variant<
+        Addition,
+        Multiplication
+    >;
+
 };
 
 #endif

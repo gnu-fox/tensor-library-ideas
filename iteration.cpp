@@ -34,7 +34,7 @@ int main() {
     std::cout << static_cast<uint16_t>(type::float32) << std::endl;
 
     
-    Tensor tensor(10);
+    Tensor tensor(10, type::float32);
     float i = 0;
     for (auto& value : tensor) {
         value = i++;
