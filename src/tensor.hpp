@@ -29,4 +29,10 @@ class Tensor {
     shape_type strides_;
 };
 
+
+/*
+value
+gradient
+*/
+
 #endif // TENSOR_HPP_

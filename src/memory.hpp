@@ -1,5 +1,5 @@
-#ifndef BUFFER_HPP_
-#define BUFFER_HPP_
+#ifndef MEMORY_HPP_
+#define MEMORY_HPP_
 
 #include <cstdint>
 #include <cstring>
@@ -85,8 +85,8 @@ namespace {
         }
 
         private:
-        void* data_ = nullptr;
-        void* offset_ = nullptr;
+        void* data_;
+        void* offset_;
         std::size_t memory_size_;
     };
 }
@@ -114,4 +114,4 @@ struct Memory {
 
 std::unordered_map<std::string, ::Block> Memory::pool;
 
-#endif // BUFFER_HPP_
+#endif // MEMORY_HPP_
