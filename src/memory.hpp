@@ -7,7 +7,7 @@
 #include <vector>
 #include <unordered_map>
 
-namespace {
+namespace internal {
 
     class Block {
         public:
@@ -91,20 +91,33 @@ namespace {
     };
 }
 
-enum class type {
-    float32
+enum class dtype {
+    float32,
+    int32
 };
 
+
+std::size_t size_of(dtype type) {
+    switch (type) {
+        case dtype::float32:
+            return sizeof(float);
+        case dtype::int32:
+            return sizeof(int);
+        default:
+            return 0;
+    }
+}
+
 struct Memory {
-    static std::unordered_map<std::string, ::Block> pool;
+    static std::unordered_map<std::string, internal::Block> pool;
     static void reserve(std::size_t memory_size, std::string location = "default") {
-        pool[location] = ::Block(memory_size);
+        pool[location] = internal::Block(memory_size);
     }
 
     using size_type = std::size_t;
-    static void* allocate(size_type size, type dtype, std::string location = "default") {
-        switch(dtype) {
-            case type::float32:
+    static void* allocate(size_type size, dtype type, std::string location = "default") {
+        switch(type) {
+            case dtype::float32:
                 return pool[location].allocate(size * sizeof(float));
             default:
                 return nullptr;
@@ -112,6 +125,6 @@ struct Memory {
     }
 };
 
-std::unordered_map<std::string, ::Block> Memory::pool;
+std::unordered_map<std::string, internal::Block> Memory::pool;
 
 #endif // MEMORY_HPP_

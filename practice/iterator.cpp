@@ -4,7 +4,6 @@
 #include <vector>
 #include <unordered_map>
 
-
 namespace {
 
     class Block {
@@ -87,18 +86,19 @@ namespace {
         void* offset_ = nullptr;
         std::size_t memory_size_;
     };
+
 }
 
 enum class type {
     float32
 };
 
-size_t bytes(type dtype) {
+inline size_t bytes(type dtype) {
     switch(dtype) {
         case type::float32:
             return sizeof(float);
         default:
-            return 0;
+            throw std::runtime_error("unsupported data type");
     }
 }
 
@@ -108,28 +108,101 @@ struct Memory {
         pool[location] = ::Block(memory_size);
     }
 
-    using size_type = std::size_t;
-    static void* allocate(size_type size, type dtype, std::string location = "default") {
-        return pool[location].allocate(size * bytes(dtype));
+    static void* allocate(std::size_t memory_size, std::string location = "default") {
+        return pool[location].allocate(memory_size);
     }
 };
 
 std::unordered_map<std::string, ::Block> Memory::pool;
 
+template<class T>
+class Iterator {
+    public:
+    Iterator(std::vector<std::size_t> strides, void* offset, type dtype) {
+        offset_ = offset;
+        strides_ = strides;
+        dtype_ = dtype;
+    }
+
+    Iterator operator[](std::size_t index) {
+        std::vector<std::size_t> strides(strides_.begin(), strides_.end() - 1);
+        offset_ = static_cast<char*>(offset_) + index * strides.back();
+        return Iterator(strides, offset_, dtype_);
+    }
+
+    Iterator& operator ++(){
+        offset_ = static_cast<char*>(offset_) + strides_.front();
+        return *this;
+    }
+
+    Iterator operator ++(int){
+        Iterator copy = *this;
+        ++(*this);
+        return copy;
+    }
+
+    Iterator& operator --(){
+        offset_ = static_cast<char*>(offset_) - strides_.front();
+        return *this;
+    }
+
+    Iterator operator --(int){
+        Iterator copy = *this;
+        --(*this);
+        return copy;
+    }
+
+    T& operator*() {
+        return *static_cast<T*>(offset_);
+    }
+
+    T* operator->() {
+        return offset_;
+    }
+
+    friend bool operator == (const Iterator& lhs, const Iterator& rhs){
+        return rhs.offset_ == lhs.offset_;
+    }
+
+    friend bool operator != (const Iterator& lhs, const Iterator& rhs){
+        return !(rhs.offset_ == lhs.offset_);
+    }
+
+    private:
+    void* offset_;
+    type dtype_;
+    std::size_t size_;
+    std::vector<std::size_t> strides_;
+};
+
+
 class Array {
     public:
     using size_type = std::size_t;
     using shape_type = std::vector<size_type>;
+    using iterator = typename Iterator<Array>;
 
     Array(size_type size, type dtype, std::string location = "default") {
-        offset_ = Memory::allocate(size, dtype, location);
         size_ = size;
         dtype_ = dtype;
+        offset_ = Memory::allocate(size * bytes(dtype), location);
     }
-    
-    size_type size() const {
-        return size_;
+
+    for(auto element : tensor) {
+        std::cout << array << std::endl;
     }
+
+    Array(shape_type shape, type dtype, std::string location = "default") {
+        size_ = 1;
+        for(auto size : shape) {
+            strides_.push_back(size_* bytes(dtype));
+            size_ *= size;
+        }
+        dtype_ = dtype;
+        offset_ = Memory::allocate(size_ * bytes(dtype), location);
+    }
+
+    size_type size() const { return size_; }
 
     private:
     void* offset_;
@@ -138,47 +211,22 @@ class Array {
     std::vector<std::size_t> strides_;
 };
 
-class Iterator {
-    public:
-    using size_type = Array::size_type;
-    using shape_type = Array::shape_type;
 
-    Iterator(shape_type shape, void* offset, type dtype) {
-        offset_ = offset;
-        size_ = bytes(dtype);
-        for(auto size : shape) {
-            strides_.push_back(size_);
-            size_ *= size;
-        }
-    }
-
-    Iterator(std::vector<std::size_t> strides, void* offset) {
-        offset_ = offset;
-        strides_ = strides;
-    }
-
-    Iterator operator[](std::size_t index) {
-        std::vector<std::size_t> strides(strides_.begin(), strides_.end() - 1);
-        offset_ = static_cast<char*>(offset_) + index * strides.back();
-        return Iterator(strides, offset_);
-    }
-
-    std::size_t size() const { // -> bytes
-        return size_;
-    }
-
-    private:
-    void* offset_;
-    std::size_t size_;
-    std::vector<std::size_t> strides_;
-};
 
 
 int main() {
     float* offset = new float[36];
+
     for(int i = 0; i < 36; i++) { offset[i] = i; }
-    Iterator it({3, 4, 3}, offset, type::float32);
-    std::cout << it.size() / 4 << std::endl;
-    delete [] offset;
-    return 0;
+
+    type dtype_ = type::float32;
+    size_t size_ = bytes(dtype_);
+    std::vector<size_t> strides_;
+    for(auto size : {3, 4, 3}) {
+        strides_.push_back(size_);
+        size_ *= size;
+    }
+
+
+    Array array({3, 4, 3}, type::float32);
 }

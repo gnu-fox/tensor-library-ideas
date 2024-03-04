@@ -1,19 +1,35 @@
-#ifndef ARRAY_HPP_
-#define ARRAY_HPP_
-
-#include <iostream>
-#include <vector>
-
-#include "memory.hpp"
 #include <iostream>
 #include <vector>
 #include <algorithm>
 
 
+enum class dtype {
+    float32,
+    int32
+};
+
+std::size_t size_of(dtype type) {
+    switch (type) {
+        case dtype::float32:
+            return sizeof(float);
+        case dtype::int32:
+            return sizeof(int);
+        default:
+            return 0;
+    }
+}
+
 class Array {
     public:
     using size_type = std::size_t;
     using shape_type = std::vector<size_type>;
+
+    Array(void* offset, std::vector<std::size_t> strides, dtype type) {
+        offset_ = offset;
+        strides_in_bytes_ = strides;
+        data_type_ = type;
+        
+    }
 
     Array operator[](size_type index) {
         if(index >= strides_in_bytes_.back()) throw std::out_of_range("index out of range");
@@ -24,12 +40,6 @@ class Array {
 
     void* offset() {
         return offset_;
-    }
-
-    Array(void* offset, std::vector<std::size_t> strides_in_bytes, dtype type) {
-        offset_ = offset;
-        strides_in_bytes_ = strides_in_bytes;
-        data_type_ = type;
     }
 
     private:
@@ -73,4 +83,32 @@ std::ostream& operator << (std::ostream& os, const Array& array) {
     }
 }
 
-#endif // ARRAY_HPP_
+
+class Tensor {
+    public:
+    Tensor(void* offset) {
+        offset_ = offset;
+    }
+
+    void* offset() {
+        return offset_;
+    }
+
+    private:
+    void* offset_;
+};
+
+int main() {
+    void* data = operator new(100 * sizeof(float));
+    std::vector<std::size_t> strides_in_bytes = {1* sizeof(float), 10* sizeof(float), 100* sizeof(float)};
+
+    for (std::size_t index = 0; index < 100; ++index) {
+        static_cast<float*>(data)[index] = index;
+    }
+
+    Array array(data, strides_in_bytes, dtype::float32);
+    std::cout << array << std::endl;
+
+    operator delete(data);
+    return 0;
+}
