@@ -2,7 +2,6 @@
 #include <vector>
 #include <algorithm>
 
-
 enum class dtype {
     float32,
     int32
@@ -19,6 +18,15 @@ std::size_t size_of(dtype type) {
     }
 }
 
+struct Range {
+    std::size_t start;
+    std::size_t stop;
+};
+
+class Shape {
+
+};
+
 class Array {
     public:
     using size_type = std::size_t;
@@ -32,10 +40,17 @@ class Array {
     }
 
     Array operator[](size_type index) {
-        if(index >= strides_in_bytes_.back()) throw std::out_of_range("index out of range");
+        if(index * size_of(data_type_) >= strides_in_bytes_.back()) throw std::out_of_range("index out of range");
         std::vector<std::size_t> strides(strides_in_bytes_.begin(), strides_in_bytes_.end() - 1);
         void* offset = static_cast<char*>(offset_) + index * strides.back();
         return Array(offset, strides, data_type_);   
+    }
+
+    Array operator[](Range index) {
+        if(index.start * size_of(data_type_) >= strides_in_bytes_.back()) throw std::out_of_range("index out of range");
+        std::vector<std::size_t> strides(strides_in_bytes_.begin(), strides_in_bytes_.end());
+        void* offset = static_cast<char*>(offset_) + index.start * strides.back();
+        return Array(offset, strides, data_type_);
     }
 
     void* offset() {
@@ -107,8 +122,7 @@ int main() {
     }
 
     Array array(data, strides_in_bytes, dtype::float32);
-    std::cout << array << std::endl;
-
+    std::cout << array[3];
     operator delete(data);
     return 0;
 }

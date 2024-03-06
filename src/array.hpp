@@ -9,11 +9,17 @@
 #include <vector>
 #include <algorithm>
 
+/*
+
+class Shape
+
+class Range
+
+*/
 
 class Array {
     public:
     using size_type = std::size_t;
-    using shape_type = std::vector<size_type>;
 
     Array operator[](size_type index) {
         if(index >= strides_in_bytes_.back()) throw std::out_of_range("index out of range");
